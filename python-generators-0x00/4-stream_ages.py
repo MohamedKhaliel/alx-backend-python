@@ -1,8 +1,6 @@
 import mysql.connector
 from typing import Generator
-
-# from typing import Generator, float
-
+from typing import Generator, float
 
 def connect_to_prodev():
     """Connects to the ALX_prodev database in MySQL"""
