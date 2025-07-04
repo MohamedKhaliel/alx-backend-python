@@ -1,0 +1,11 @@
+user_id,name,email,age
+550e8400-e29b-41d4-a716-446655440000,John Doe,john.doe@example.com,25.5
+550e8400-e29b-41d4-a716-446655440001,Jane Smith,jane.smith@example.com,30.0
+550e8400-e29b-41d4-a716-446655440002,Bob Johnson,bob.johnson@example.com,28.7
+550e8400-e29b-41d4-a716-446655440003,Alice Brown,alice.brown@example.com,32.3
+550e8400-e29b-41d4-a716-446655440004,Charlie Wilson,charlie.wilson@example.com,27.1
+550e8400-e29b-41d4-a716-446655440005,Diana Davis,diana.davis@example.com,29.8
+550e8400-e29b-41d4-a716-446655440006,Edward Miller,edward.miller@example.com,31.2
+550e8400-e29b-41d4-a716-446655440007,Fiona Garcia,fiona.garcia@example.com,26.9
+550e8400-e29b-41d4-a716-446655440008,George Martinez,george.martinez@example.com,33.5
+550e8400-e29b-41d4-a716-446655440009,Helen Rodriguez,helen.rodriguez@example.com,24.7 
