@@ -1,6 +1,6 @@
 # MySQL Database Generator
 
-This project sets up a MySQL database with user data and provides a generator to stream rows from the database one by one.
+This Project sets up a MySQL database with user data and provides a generator to stream rows from the database one by one.
 
 ## Features
 
