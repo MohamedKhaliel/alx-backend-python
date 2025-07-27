@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'chats',
+    'rest_framework_simplejwt',
     # 'drf_nested_routers',
 ]
 
@@ -55,8 +56,17 @@ MIDDLEWARE = [
 DEFAULT_AUTHENTICATION_CLASSES = [
     'rest_framework.permissions.IsAuthenticated',
     'rest_framework.authentication.SessionAuthentication',
+    'rest_framework_simplejwt.authentication.JWTAuthentication',
+    'rest_framework.authentication.BasicAuthentication',
+    'chats.auth.CustomAuthentication',
 ]
 
+    
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+
+}   
 ROOT_URLCONF = 'messaging_app.urls'
 
 DEFAULT_AUTH_USER_MODEL = 'chats.user'
@@ -131,12 +141,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# my additions
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ),
-    
-}
