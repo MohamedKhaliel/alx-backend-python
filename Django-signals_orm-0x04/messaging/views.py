@@ -44,3 +44,10 @@ def show_all_messages(request):
     return render(request, 'messaging/all_messages.html', {'messages': messages})
 
 
+def unread_messages(request):
+    user = request.user
+    messages = Message.unread.for_user(user)
+    return render(request, 'messaging/unread_messages.html', {'messages': messages})
+
+
+
