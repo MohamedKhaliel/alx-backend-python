@@ -23,12 +23,19 @@ def conversation_thread(request, user_id):
     )
     return render(request, 'messaging/thread.html', {'messages': messages})
 
-def get_replies(message):
-    replies = []
-    for reply in message.replies.all():
-        nested = get_replies(reply)
-        replies.append({
+
+def get_threaded_replies(parent_msg):
+    replies = (
+        Message.objects
+        .filter(parent_message=parent_msg)
+        .select_related('sender', 'receiver', 'parent_message')
+        .prefetch_related('replies')
+        .order_by('timestamp')
+    )
+    return [
+        {
             'message': reply,
-            'replies': nested
-        })
-    return replies
+            'replies': get_threaded_replies(reply)
+        } for reply in replies
+    ]
+
