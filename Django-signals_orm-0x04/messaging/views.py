@@ -39,3 +39,8 @@ def get_threaded_replies(parent_msg):
         } for reply in replies
     ]
 
+def show_all_messages(request):
+    messages = Message.objects.filter(parent_message=None)
+    return render(request, 'messaging/all_messages.html', {'messages': messages})
+
+
