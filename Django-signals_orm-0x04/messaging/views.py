@@ -44,10 +44,9 @@ def show_all_messages(request):
     return render(request, 'messaging/all_messages.html', {'messages': messages})
 
 
-def unread_messages(request):
+
+def unread_messages_view(request):
     user = request.user
-    messages = Message.unread.for_user(user)
-    return render(request, 'messaging/unread_messages.html', {'messages': messages})
-
-
+    unread_messages = Message.unread.for_user(user).only('id', 'sender', 'content', 'timestamp')
+    return render(request, 'messaging/unread_messages.html', {'messages': unread_messages})
 
