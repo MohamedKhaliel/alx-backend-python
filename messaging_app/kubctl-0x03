@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Function to check if command exists
+check_command() {
+    if ! command -v $1 &> /dev/null; then
+        echo "Error: $1 is not installed"
+        exit 1
+    fi
+}
+
+# Check required commands
+check_command kubectl
+check_command curl
+
+# Get service IP and port
+SERVICE_IP=$(kubectl get service messaging-app-service -o jsonpath='{.spec.clusterIP}')
+PORT=80
+
+# Function to test endpoint
+test_endpoint() {
+    curl -s -o /dev/null -w "%{http_code}" "http://${SERVICE_IP}:${PORT}"
+}
+
+# Start monitoring in background
+echo "Starting continuous monitoring..."
+(
+    while true; do
+        status_code=$(test_endpoint)
+        timestamp=$(date '+%H:%M:%S')
+        echo "[${timestamp}] Status Code: ${status_code}"
+        sleep 1
+    done
+) &
+MONITOR_PID=$!
+
+# Apply the deployment update
+echo "Applying deployment update..."
+kubectl apply -f blue_deployment.yaml
+
+# Monitor rollout status
+echo "Monitoring rollout status..."
+kubectl rollout status deployment/messaging-app
+
+# Check if rollout was successful
+if [ $? -eq 0 ]; then
+    echo "Rollout completed successfully"
+else
+    echo "Rollout failed"
+    kill $MONITOR_PID
+    exit 1
+fi
+
+# Get pod information after update
+echo -e "\nCurrent pods after update:"
+kubectl get pods -l app=messaging-app -o wide
+
+# Stop the monitoring
+kill $MONITOR_PID
+
+# Final verification
+echo -e "\nVerifying deployment status:"
+kubectl rollout history deployment/messaging-app
+kubectl get deployment messaging-app

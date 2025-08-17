@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Function to check pod status and logs
+check_deployment() {
+    local version=$1
+    echo "Checking $version deployment..."
+    
+    # Get pods for this version
+    pods=$(kubectl get pods -l version=$version -o name)
+    
+    for pod in $pods; do
+        echo "==== Checking $pod ===="
+        
+        # Check pod status
+        kubectl get $pod -o wide
+        
+        # Check pod logs for errors
+        echo "Logs for $pod:"
+        kubectl logs $pod | grep -i "error\|exception" || echo "No errors found in logs"
+    done
+}
+
+# Deploy blue version
+echo "Deploying blue version..."
+kubectl apply -f deployment.yaml
+
+# Wait for blue deployment to be ready
+kubectl wait --for=condition=available --timeout=60s deployment/messaging-app-blue
+
+# Check blue deployment
+check_deployment "blue"
+
+# Deploy green version
+echo -e "\nDeploying green version..."
+kubectl apply -f green_deployment.yaml
+
+# Wait for green deployment to be ready
+kubectl wait --for=condition=available --timeout=60s deployment/messaging-app-green
+
+# Check green deployment
+check_deployment "green"
+
+# Deploy services
+echo -e "\nDeploying services..."
+kubectl apply -f kubeservice.yaml
+
+# Show deployment status
+echo -e "\nCurrent deployment status:"
+kubectl get deployments -l app=messaging-app
+
+# Show service status
+echo -e "\nService status:"
+kubectl get services | grep messaging-app
+
+echo -e "\nTraffic split (currently 20% to green):"
+kubectl describe service messaging-app-service | grep -i "canary"

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Check if kubectl is available
+if ! command -v kubectl &> /dev/null; then
+    echo "Error: kubectl is not installed"
+    exit 1
+fi
+
+# Check if wrk is available
+if ! command -v wrk &> /dev/null; then
+    echo "Error: wrk is not installed. Installing..."
+    sudo apt-get update && sudo apt-get install -y wrk
+fi
+
+# Enable metrics server if not already enabled
+if ! kubectl get deployment metrics-server -n kube-system &> /dev/null; then
+    echo "Enabling metrics server..."
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    sleep 30  # Wait for metrics server to initialize
+fi
+
+# Scale the deployment to 3 replicas
+echo "Scaling deployment to 3 replicas..."
+kubectl scale deployment messaging-app --replicas=3
+
+# Wait for pods to be ready
+echo "Waiting for pods to be ready..."
+sleep 20
+
+# Verify pods are running
+echo -e "\nChecking pod status:"
+kubectl get pods -l app=messaging-app
+
+# Get service IP for load testing
+SERVICE_IP=$(kubectl get service messaging-app-service -o jsonpath='{.spec.clusterIP}')
+PORT=80
+
+echo -e "\nStarting load test with wrk..."
+echo "Testing endpoint: http://${SERVICE_IP}:${PORT}"
+wrk -t4 -c100 -d30s "http://${SERVICE_IP}:${PORT}"
+
+# Monitor resource usage
+echo -e "\nMonitoring resource usage:"
+echo "Pod Resources:"
+kubectl top pods -l app=messaging-app
+
+echo -e "\nNode Resources:"
+kubectl top nodes
+
+# Display deployment status
+echo -e "\nFinal deployment status:"
+kubectl get deployment messaging-app

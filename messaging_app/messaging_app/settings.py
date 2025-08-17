@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'chats',
     'rest_framework_simplejwt',
-    'django_filters',
     # 'drf_nested_routers',
 ]
 
@@ -54,20 +53,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-DEFAULT_AUTHENTICATION_CLASSES = [
-    'rest_framework.permissions.IsAuthenticated',
-    'rest_framework.authentication.SessionAuthentication',
-    'rest_framework_simplejwt.authentication.JWTAuthentication',
-    'rest_framework.authentication.BasicAuthentication',
-    'chats.auth.CustomAuthentication',
-]
-
-    
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+}
 
-}   
+DEFAULT_AUTHENTICATION_CLASSES = [
+    'rest_framework.permissions.IsAuthenticated',
+    'rest_framework.authentication.BasicAuthentication',
+    'rest_framework.authentication.SessionAuthentication',
+]
+
 ROOT_URLCONF = 'messaging_app.urls'
 
 DEFAULT_AUTH_USER_MODEL = 'chats.user'
@@ -96,8 +92,12 @@ WSGI_APPLICATION = 'messaging_app.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'messaging_app',
+        'USER': 'root',
+        'PASSWORD': '123456',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 

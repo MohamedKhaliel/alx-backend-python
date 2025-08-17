@@ -5,13 +5,13 @@ from rest_framework.response import Response
 from django_filters import rest_framework as filters
 from .models import Conversation, Message, user
 from .serializers import ConversationSerializer, MessageSerializer
-from .permissions import IsParticipantofConversation
+from .permissions import IsParticipantOfConversation
 from .auth import CustomAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .pagination import StandardResultsSetPagination
 from .filters import MessageFilter
-# Create your views here.
 
+# Create your views here.
 
 
 class ConversationFilter(filters.FilterSet):
@@ -27,6 +27,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
     filterset_class = ConversationFilter
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
 
     def get_queryset(self):
         user_id = self.request.user.user_id
@@ -53,16 +54,17 @@ class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     filterset_class = MessageFilter
-    permission_classes = [IsAuthenticated, IsParticipantofConversation]
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     pagination_class = StandardResultsSetPagination
-
+    
     def get_queryset(self):
         user_id = self.request.user.user_id
         conversation_id = self.kwargs.get('conversation_id')
-        # Explicitly use Message.objects.filter
+        # Only messages in conversations the user participates in
         return Message.objects.filter(
             conversation__conversation_id=conversation_id,
-            conversation__participants__user_id=user_id)
+            conversation__participants__user_id=user_id
+        )
     
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
@@ -70,8 +72,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
         message = self.get_object()
-        # Example permission check using HTTP_403_FORBIDDEN
-        if message.conversation not in self.request.user.conversations.all():
+        # Check if user is a participant
+        if not message.conversation.participants.filter(user_id=request.user.user_id).exists():
             return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
         message.is_read = True
         message.save()
