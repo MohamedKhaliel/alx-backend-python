@@ -2,17 +2,17 @@ pipeline {
     agent any
 
     environment {
-        // Use GitHub credentials
         GITHUB_CREDS = credentials('github-creds')
-        // Define Python virtual environment path
+        DOCKERHUB_CREDS = credentials('dockerhub-creds')
         VENV = ".venv"
+        IMAGE_NAME = "mohamedkhaliel/messaging_app"
     }
 
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/<your-username>/alx-backend-python.git',
+                    url: 'https://github.com/MohamedKhaliel/alx-backend-python.git',
                     credentialsId: 'github-creds'
             }
         }
@@ -41,12 +41,27 @@ pipeline {
                 }
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    cd messaging_app
+                    docker build -t $IMAGE_NAME:latest .
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withDockerRegistry([ credentialsId: 'dockerhub-creds', url: '' ]) {
+                    sh 'docker push $IMAGE_NAME:latest'
+                }
+            }
+        }
     }
 
     triggers {
-        // Manual trigger (not automatic on push)
+        // Manual trigger only
         pollSCM('')
     }
 }
-
-
